@@ -64,3 +64,25 @@ export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/home/ramjan/libtorch"
 # Aliases
 # -----------------------------
 alias st='speedtest-cli --secure'
+export PATH="$HOME/.config/emacs/bin:$PATH"
+#------------------------------
+# Pomodoro
+# -----------------------------
+declare -A pomo_options
+pomo_options["work"]="25"
+pomo_options["break"]="5"
+
+pomodoro () {
+  if [ -n "$1" ] && [ -n "${pomo_options[$1]}" ]; then
+    session=$1
+    duration=${pomo_options[$session]}
+    
+    echo "$session for $duration minutes"
+    timer ${duration}m
+    
+    notify-send "Pomodoro" "$session session done"
+  fi
+}
+
+alias wo="pomodoro work"
+alias br="pomodoro break"
