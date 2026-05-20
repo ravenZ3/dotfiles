@@ -1,0 +1,225 @@
+/* Catppuccin Mocha */
+:root {
+  --base:    #1E1D2F;
+  --surface: #302D41;
+  --overlay: #6E6C7E;
+  --text:    #D9E0EE;
+  --subtext: #A6ADC8;
+  --blue:    #96CDFB;
+  --pink:    #F28FAD;
+  --peach:   #F8BD96;
+  --green:   #ABE9B3;
+  --mauve:   #DDB6F2;
+
+  --border-radius: 12px;
+  --hover-transition: background 0.15s ease-in-out;
+}
+
+notificationwindow, blankwindow {
+  background: transparent;
+}
+
+.floating-notifications {
+  background: transparent;
+}
+
+.floating-notifications .notification {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Notification card */
+.notification-row .notification-background {
+  padding: 6px 12px;
+}
+
+.notification-row .notification-background .notification {
+  background: var(--base);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--surface);
+  padding: 0;
+  transition: var(--hover-transition);
+}
+
+.notification-row .notification-background .notification.normal {
+  border-left: 3px solid var(--blue);
+}
+
+.notification-row .notification-background .notification.critical {
+  border-left: 3px solid var(--pink);
+}
+
+.notification-row .notification-background .notification.low {
+  border-left: 3px solid var(--overlay);
+}
+
+/* Default action area (title + body) */
+.notification-default-action {
+  padding: 10px 12px;
+  margin: 0;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  border-radius: var(--border-radius);
+  transition: var(--hover-transition);
+}
+
+.notification-default-action:hover {
+  background: var(--surface);
+}
+
+.notification-default-action:not(:only-child) {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Summary / title */
+.notification-default-action .notification-content .text-box .summary {
+  font-size: 14px;
+  font-weight: bold;
+  color: var(--text);
+}
+
+/* Body */
+.notification-default-action .notification-content .text-box .body {
+  font-size: 13px;
+  color: var(--subtext);
+}
+
+/* Time */
+.notification-default-action .notification-content .text-box .time {
+  font-size: 12px;
+  color: var(--overlay);
+}
+
+/* Progress bar */
+.notification-default-action .notification-content progressbar {
+  margin-top: 6px;
+}
+
+.notification-default-action .notification-content progressbar trough {
+  background: var(--surface);
+  border-radius: 6px;
+  min-height: 6px;
+  border: none;
+}
+
+.notification-default-action .notification-content progressbar progress {
+  background: linear-gradient(to right, var(--blue), var(--mauve));
+  border-radius: 6px;
+  min-height: 6px;
+  border: none;
+}
+
+/* Action buttons */
+.notification-alt-actions {
+  background: var(--surface);
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  padding: 6px;
+}
+
+.notification-action {
+  margin: 2px;
+  padding: 0;
+}
+
+.notification-action > button {
+  background: var(--base);
+  color: var(--blue);
+  border-radius: 8px;
+  border: 1px solid var(--overlay);
+  padding: 4px 10px;
+  font-size: 12px;
+  transition: var(--hover-transition);
+}
+
+.notification-action > button:hover {
+  background: var(--blue);
+  color: var(--base);
+  border-color: var(--blue);
+}
+
+/* Close button */
+.close-button {
+  background: transparent;
+  color: var(--overlay);
+  border: none;
+  border-radius: 100%;
+  min-width: 22px;
+  min-height: 22px;
+  margin: 6px 6px 0 0;
+  padding: 0;
+}
+
+.close-button:hover {
+  background: var(--pink);
+  color: var(--base);
+  transition: var(--hover-transition);
+}
+
+/* Control center */
+.control-center {
+  background: rgba(30, 29, 47, 0.95);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--surface);
+  color: var(--text);
+}
+
+.control-center .control-center-list {
+  background: transparent;
+}
+
+.control-center .control-center-list .notification {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.blank-window {
+  background: transparent;
+}
+
+/* Notification group */
+.notification-group .notification-group-buttons,
+.notification-group .notification-group-headers {
+  color: var(--subtext);
+  margin: 0 12px;
+}
+
+.notification-group.collapsed.not-expanded {
+  opacity: 0.5;
+}
+
+/* Widgets */
+.widget {
+  margin: 8px;
+  padding: 8px;
+  border-radius: var(--border-radius);
+  color: var(--text);
+}
+
+.widget-title > label {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--text);
+  margin-right: 8px;
+}
+
+.widget-title > button {
+  background: var(--surface);
+  color: var(--subtext);
+  border-radius: var(--border-radius);
+  border: none;
+}
+
+.widget-title > button:hover {
+  background: var(--pink);
+  color: var(--base);
+}
+
+.widget-dnd label {
+  color: var(--text);
+  margin-right: 8px;
+}
+
+.widget-dnd switch {
+  border-radius: var(--border-radius);
+}
