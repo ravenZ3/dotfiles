@@ -18,9 +18,10 @@ else
   exit 1
 fi
 
-MINS=$((TOTAL_SECS / 60))
+HRS=$((TOTAL_SECS / 3600))
+MINS=$(( (TOTAL_SECS % 3600) / 60 ))
 SECS=$((TOTAL_SECS % 60))
-LABEL="${MINS}m${SECS:+${SECS}s}"
+LABEL="$( (( HRS > 0 )) && echo "${HRS}h" )$( (( MINS > 0 )) && echo "${MINS}m" )$( (( SECS > 0 )) && echo "${SECS}s" )"
 
 # Send initial notification and capture its ID
 NOTIF_ID=$(notify-send --print-id -u normal -h int:value:0 "$NAME" "${LABEL} remaining")
@@ -49,9 +50,9 @@ done
 paplay /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga &>/dev/null
 
 choice=$(notify-send -r "$NOTIF_ID" -u critical \
-  --action="work:New Work 25m" \
-  --action="break:Break 5m" \
-  --action="long:Long Break 15m" \
+  --action="work=New Work 25m" \
+  --action="break=Break 5m" \
+  --action="long=Long Break 15m" \
   "$NAME done!" "Finished ${LABEL} session")
 
 case "$choice" in
