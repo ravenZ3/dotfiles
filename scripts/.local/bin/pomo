@@ -23,29 +23,57 @@ MINS=$(( (TOTAL_SECS % 3600) / 60 ))
 SECS=$((TOTAL_SECS % 60))
 LABEL="$( (( HRS > 0 )) && echo "${HRS}h" )$( (( MINS > 0 )) && echo "${MINS}m" )$( (( SECS > 0 )) && echo "${SECS}s" )"
 
-# Send initial notification and capture its ID
-NOTIF_ID=$(notify-send --print-id -u normal -h int:value:0 "$NAME" "${LABEL} remaining")
+if [[ "$XDG_CURRENT_DESKTOP" == "Hyprland" ]]; then
+  UPDATE_INTERVAL=1
+else
+  UPDATE_INTERVAL=30
+fi
 
-# Update via gdbus directly — no subprocess spawned per tick
+EXPIRE_MS=$(( UPDATE_INTERVAL * 1000 + 5000 ))
+NOTIF_ID=$(notify-send --print-id -u normal -h int:value:0 --expire-time $EXPIRE_MS "$NAME" "${LABEL} remaining")
+
+# Watch for user dismissing the notification
+DISMISS_FLAG=$(mktemp)
+gdbus monitor --session --dest org.freedesktop.Notifications 2>/dev/null \
+  | grep --line-buffered "NotificationClosed" \
+  | while IFS= read -r line; do
+      [[ "$line" == *"uint32 $NOTIF_ID,"* ]] && echo 1 > "$DISMISS_FLAG"
+    done &
+MONITOR_PID=$!
+
 _update() {
   local progress=$1 body=$2
-  gdbus call --session \
-    --dest org.freedesktop.Notifications \
-    --object-path /org/freedesktop/Notifications \
-    --method org.freedesktop.Notifications.Notify \
-    "pomo" "$NOTIF_ID" "" "$NAME" "$body" \
-    "[]" "{'value': <int32 $progress>}" \
-    "int32 -1" > /dev/null
+  if [[ "$XDG_CURRENT_DESKTOP" == "Hyprland" ]]; then
+    gdbus call --session \
+      --dest org.freedesktop.Notifications \
+      --object-path /org/freedesktop/Notifications \
+      --method org.freedesktop.Notifications.Notify \
+      "pomo" "$NOTIF_ID" "" "$NAME" "$body" \
+      "[]" "{'value': <int32 $progress>}" \
+      "int32 0" > /dev/null
+  else
+    notify-send -r "$NOTIF_ID" -u normal \
+      -h int:value:$progress \
+      --expire-time $EXPIRE_MS \
+      "$NAME" "$body"
+  fi
 }
 
-for (( elapsed=1; elapsed<=TOTAL_SECS; elapsed++ )); do
-  sleep 1
+elapsed=0
+while (( elapsed < TOTAL_SECS )); do
+  sleep_time=$UPDATE_INTERVAL
+  (( elapsed + sleep_time > TOTAL_SECS )) && sleep_time=$(( TOTAL_SECS - elapsed ))
+  sleep "$sleep_time"
+  elapsed=$(( elapsed + sleep_time ))
   remaining=$(( TOTAL_SECS - elapsed ))
   progress=$(( elapsed * 100 / TOTAL_SECS ))
   rmins=$(( remaining / 60 ))
   rsecs=$(( remaining % 60 ))
-  (( remaining > 0 )) && _update "$progress" "${rmins}m ${rsecs}s remaining"
+  [[ ! -s "$DISMISS_FLAG" ]] && (( remaining > 0 )) && _update "$progress" "${rmins}m ${rsecs}s remaining"
 done
+
+kill "$MONITOR_PID" 2>/dev/null
+rm -f "$DISMISS_FLAG"
 
 paplay /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga &>/dev/null
 
