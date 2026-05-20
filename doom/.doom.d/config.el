@@ -2,7 +2,12 @@
 
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
+;; blur effects
 
+;;(add-to-list 'default-frame-alist '(alpha-background . 95))
+;;(set-face-background 'default nil)
+;;(set-face-background 'fringe nil)
+;;(set-face-background 'region nil)
 
 ;; Some functionality uses this to identify you, e.g. GPG configuration, email
 ;; clients, file templates and snippets. It is optional.
@@ -21,20 +26,34 @@
 
 (setq doom-font (font-spec :family "JetBrains Mono" :size 14)
       doom-variable-pitch-font (font-spec :family "Cantarell" :size 16))
-(add-hook 'org-mode-hook 'variable-pitch-mode)
+(setq-default line-spacing 3)
 
-(setq org-hide-emphasis-markers t)
-(setq org-pretty-entities t)
-(setq org-ellipsis " ▾")
-
-(custom-set-faces
- '(org-level-1 ((t (:height 1.3 :weight bold))))
- '(org-level-2 ((t (:height 1.2 :weight semi-bold))))
- '(org-level-3 ((t (:height 1.1))))
- )
-
+(add-hook 'org-mode-hook #'mixed-pitch-mode)
+(add-hook 'org-mode-hook #'org-indent-mode)
 (add-hook 'org-mode-hook #'visual-line-mode)
 (add-hook 'org-mode-hook #'visual-fill-column-mode)
+(add-hook 'org-mode-hook #'org-modern-mode)
+
+(setq org-hide-leading-stars t)
+(setq org-hide-emphasis-markers t)
+
+(after! org-superstar
+  (setq org-superstar-remove-leading-stars t
+        org-superstar-headline-bullets-list '("◉" "○" "✸" "✿" "✤")))
+(setq org-pretty-entities t)
+(setq org-ellipsis " ▾")
+(setq org-modern-star nil
+      org-modern-hide-stars nil
+      org-modern-timestamp t
+      org-modern-tag t
+      org-modern-block-fringe t)
+
+(custom-set-faces!
+ '(org-level-1 :height 1.3 :weight bold :foreground "#c678dd")
+ '(org-level-2 :height 1.2 :weight semi-bold :foreground "#51afef")
+ '(org-level-3 :height 1.1 :foreground "#98be65")
+ '(org-level-4 :foreground "#da8548")
+ '(org-level-5 :foreground "#5699af"))
 
 (setq visual-fill-column-width 100
       visual-fill-column-center-text t)
@@ -83,3 +102,10 @@
 (map! :leader
       :desc "Insert C++ template"
       "i c" #'my/cpp-template)
+
+;; org-crypt: encrypt headings tagged :crypt: with GPG
+(require 'org-crypt)
+(org-crypt-use-before-save-magic)
+(setq org-tags-exclude-from-inheritance '("crypt"))
+(setq org-crypt-key "FAF99E7D15508FEB")
+(setq org-crypt-disable-auto-save t)

@@ -1,0 +1,14 @@
+#!/bin/bash
+choice=$(printf "Work 25m\nBreak 5m\nLong Break 15m\nCustom..." | rofi -dmenu -p "Pomo" -theme ~/.config/rofi/launcher.rasi)
+case "$choice" in
+  "Work 25m")       pomo work 25 & ;;
+  "Break 5m")       pomo break 5  & ;;
+  "Long Break 15m") pomo long 15  & ;;
+  "Custom...")
+    session=$(rofi -dmenu -p "Session name" -theme ~/.config/rofi/launcher.rasi <<< "")
+    [[ -z "$session" ]] && exit
+    duration=$(rofi -dmenu -p "Duration (e.g. 10, 25, 1h)" -theme ~/.config/rofi/launcher.rasi <<< "")
+    [[ -z "$duration" ]] && exit
+    pomo "$session" "$duration" &
+    ;;
+esac

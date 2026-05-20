@@ -1,0 +1,61 @@
+#!/bin/bash
+# Usage: pomo <name> [duration]
+# Duration: plain number = minutes, e.g. 10, 25, 1h
+# Examples:
+#   pomo leetcode 10
+#   pomo work 25
+#   pomo break 5
+
+NAME="${1:-work}"
+RAW="${2:-25}"
+
+if [[ "$RAW" =~ ^([0-9]+)h$ ]]; then
+  TOTAL_SECS=$(( ${BASH_REMATCH[1]} * 3600 ))
+elif [[ "$RAW" =~ ^([0-9]+)m?$ ]]; then
+  TOTAL_SECS=$(( ${BASH_REMATCH[1]} * 60 ))
+else
+  echo "Invalid duration: $RAW" >&2
+  exit 1
+fi
+
+MINS=$((TOTAL_SECS / 60))
+SECS=$((TOTAL_SECS % 60))
+LABEL="${MINS}m${SECS:+${SECS}s}"
+
+# Send initial notification and capture its ID
+NOTIF_ID=$(notify-send --print-id -u normal -h int:value:0 "$NAME" "${LABEL} remaining")
+
+# Update via gdbus directly — no subprocess spawned per tick
+_update() {
+  local progress=$1 body=$2
+  gdbus call --session \
+    --dest org.freedesktop.Notifications \
+    --object-path /org/freedesktop/Notifications \
+    --method org.freedesktop.Notifications.Notify \
+    "pomo" "$NOTIF_ID" "" "$NAME" "$body" \
+    "[]" "{'value': <int32 $progress>}" \
+    "int32 -1" > /dev/null
+}
+
+for (( elapsed=1; elapsed<=TOTAL_SECS; elapsed++ )); do
+  sleep 1
+  remaining=$(( TOTAL_SECS - elapsed ))
+  progress=$(( elapsed * 100 / TOTAL_SECS ))
+  rmins=$(( remaining / 60 ))
+  rsecs=$(( remaining % 60 ))
+  (( remaining > 0 )) && _update "$progress" "${rmins}m ${rsecs}s remaining"
+done
+
+paplay /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga &>/dev/null
+
+choice=$(notify-send -r "$NOTIF_ID" -u critical \
+  --action="work:New Work 25m" \
+  --action="break:Break 5m" \
+  --action="long:Long Break 15m" \
+  "$NAME done!" "Finished ${LABEL} session")
+
+case "$choice" in
+  work)  pomo work 25  ;;
+  break) pomo break 5  ;;
+  long)  pomo long 15  ;;
+esac
